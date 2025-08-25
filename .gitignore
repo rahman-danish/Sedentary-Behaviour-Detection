@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+.ipynb_checkpoints/
+.DS_Store
+
+# Data & outputs
+data/
+*.csv
+*.xlsx
+
+# Models / big artifacts
+*.h5
+*.hdf5
+*.pkl
+*.joblib
+
+# TensorBoard & logs (keep small sample only)
+events.out.tfevents*
+logs/
+runs/
+
+# OS / editors
+*.swp
+*.swo
+*.bak
+*.tmp
+.vscode/
+.idea/
