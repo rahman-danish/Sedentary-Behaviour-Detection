@@ -1,6 +1,3 @@
-# lstm_sedentary.py
-# LSTM for time-series classification (e.g., Fitbit minute-level -> day-level label)
-
 import os, json, math, datetime as dt
 import numpy as np
 import pandas as pd
@@ -12,9 +9,8 @@ from sklearn.utils.class_weight import compute_class_weight
 import tensorflow as tf
 from tensorflow.keras import layers, models, callbacks
 
-# -----------------------------
-# Config
-# -----------------------------
+
+# Configure
 SEED = 42
 np.random.seed(SEED)
 tf.random.set_seed(SEED)
@@ -22,9 +18,8 @@ tf.random.set_seed(SEED)
 RESULTS_DIR = "results_lstm"
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
-# -----------------------------
-# (A) Provide X, y as sequences
-# -----------------------------
+# Provide X, y as sequences
+
 def load_sequences():
     """
     Return:
@@ -33,22 +28,19 @@ def load_sequences():
         feature_names: list[str]
     Replace this stub with your actual loader that builds sequences.
     """
-    # ---- EXAMPLE (delete after wiring your data) ----
     # Synthetic example: 300 days, each up to 1440 minutes, features=[steps, hr]
     n_samples = 300
     seq_len = 1440        # pad/trim to 1440 minutes per day
     n_features = 2        # e.g., steps, heart rate
     # Create random data and simple labels (just for a runnable example)
     X = np.random.rand(n_samples, seq_len, n_features).astype("float32")
-    # Make class imbalance similar to your dataset (~90% class 1)
+    # Make class imbalance similar to your dataset (90% class 1)
     y = np.zeros(n_samples, dtype=int)
     y[int(n_samples*0.08):] = 1
     feature_names = ["steps", "heart_rate"]
     return X, y, feature_names
 
-# -----------------------------
-# (B) Helper: build sequences from minute-level tables (optional)
-# -----------------------------
+# build sequences from minute-level tables
 def make_sequences_from_minutes(df_minutes, id_col, ts_col, feature_cols,
                                 day_col=None, pad_to=1440):
     """
@@ -85,12 +77,11 @@ def make_sequences_from_minutes(df_minutes, id_col, ts_col, feature_cols,
         dates.append(d)
 
     X = np.stack(X_list, axis=0)
-    y = np.zeros(len(dates), dtype=int)  # placeholder; map your true labels here
+    y = np.zeros(len(dates), dtype=int) 
     return X, y, feature_cols, dates
 
-# -----------------------------
 # Build the model
-# -----------------------------
+
 def build_lstm(input_shape, lstm_units=64, dropout=0.3, recurrent_dropout=0.0):
     """
     input_shape: (seq_len, n_features)
@@ -109,9 +100,8 @@ def build_lstm(input_shape, lstm_units=64, dropout=0.3, recurrent_dropout=0.0):
                   metrics=["accuracy", tf.keras.metrics.AUC(name="roc_auc")])
     return model
 
-# -----------------------------
 # Train/Evaluate
-# -----------------------------
+
 def main():
     # Load data
     X, y, feature_names = load_sequences()

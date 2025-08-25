@@ -8,7 +8,7 @@ df_heartrate = pd.read_csv("merged_heartrate.csv")
 df_steps = pd.read_csv("merged_minuteSteps.csv")
 
 # Step 2: Convert date columns to datetime (to python datetime format)
-# Explicit format=... is used for sleep and steps to avoid parsing issues
+# Explicit format is used for sleep and steps to avoid parsing issues
 
 df_daily['ActivityDate'] = pd.to_datetime(df_daily['ActivityDate'])
 df_sleep['SleepDay'] = pd.to_datetime(df_sleep['SleepDay'], format="%m/%d/%Y %I:%M:%S %p")
@@ -49,4 +49,4 @@ df_merged[numeric_cols] = scaler.fit_transform(df_merged[numeric_cols])
 
 # Step 8: Save final processed dataset
 df_merged.to_csv("final_processed_fitbit.csv", index=False)
-print("✅ Final dataset saved to final_processed_fitbit.csv")
+print("Final dataset saved to final_processed_fitbit.csv")

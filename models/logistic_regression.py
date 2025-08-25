@@ -21,32 +21,32 @@ from loader import load_data
 X, y = load_data()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# ----------- Train Logistic Regression Model -----------
+#Train Logistic Regression Model
 model = make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000, class_weight='balanced'))
 model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 
-# ----------- Classification Report -----------
+#Classification Report
 print("Logistic Regression Results:")
 print(classification_report(y_test, y_pred))
 
-# ----------- Cross-Validation -----------
+#Cross-Validation
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 model_cv = LogisticRegression(class_weight='balanced', max_iter=1000)
 scores = cross_val_score(model_cv, X, y, cv=cv, scoring='f1_macro')
 print("Logistic Regression - F1 Macro Scores:", scores)
 print(f"Mean F1: {scores.mean():.4f}, Std: {scores.std():.4f}")
 
-# ----------- Confusion Matrix -----------
+#Confusion Matrix
 cm = confusion_matrix(y_test, y_pred)
 labels = np.unique(y_test)
 disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
 disp.plot(cmap=plt.cm.Blues)
 plt.title("Confusion Matrix")
-# plt.savefig("F:/Dessertation/dataset/Logistic Regression/conf_matrix_Logistic_Regression.png")
-# plt.show()
+plt.savefig("F:/Dessertation/dataset/Logistic Regression/conf_matrix_Logistic_Regression.png")
+plt.show()
 
-# ----------- ROC Curve (Binary classification only) -----------
+#ROC Curve (Binary classification only)
 if len(labels) == 2:
     y_score = model.predict_proba(X_test)[:, 1]
     fpr, tpr, _ = roc_curve(y_test, y_score)
@@ -59,10 +59,10 @@ if len(labels) == 2:
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
     plt.legend()
-    # plt.savefig("F:/Dessertation/dataset/Logistic Regression/roc_curve_Logistic_Regression.png")
-    # plt.show()
+    plt.savefig("F:/Dessertation/dataset/Logistic Regression/roc_curve_Logistic_Regression.png")
+    plt.show()
 else:
     print("ROC curve is only available for binary classification problems.")
 
-# ----------- Save Trained Model -----------
+#Save Trained Model
 joblib.dump(model, "logistic_model.pkl")

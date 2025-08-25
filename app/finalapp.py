@@ -8,7 +8,7 @@ import joblib
 import matplotlib.pyplot as plt
 from datetime import datetime
 import shap
-import tensorflow as tf  # ok to keep even if not used directly (Keras models)
+import tensorflow as tf 
 
 
 def _predict_vec(model):
@@ -62,12 +62,11 @@ def shap_explain_dl(model, X_train_df, X_sample_df):
     return explainer(X_sample_df)
 
 st.set_page_config(page_title="Smart Sedentary Behaviour App", layout="wide")
-st.title("🤔 Sedentary Behaviour Detection APP")
+st.title("Sedentary Behaviour Detection APP")
 st.write("Upload any Fitbit CSV file(s), and this app will automatically detect your activity level.")
 
-# -----------------------------
 # Expected features (daily)
-# -----------------------------
+
 required_features = [
     'TotalSteps', 'TotalDistance', 'TrackerDistance', 'LoggedActivitiesDistance',
     'VeryActiveDistance', 'ModeratelyActiveDistance', 'LightActiveDistance',
@@ -76,18 +75,16 @@ required_features = [
     'TotalMinutesAsleep', 'TotalTimeInBed', 'AvgHeartRate', 'AvgStepsPerMinute'
 ]
 
-# -----------------------------
 # Upload
-# -----------------------------
+
 uploaded_files = st.file_uploader(
     "Upload one or more Fitbit CSV files (activity, sleep, heart rate, steps, etc.):",
     type="csv",
     accept_multiple_files=True
 )
 
-# -----------------------------
 # Helpers
-# -----------------------------
+
 def extract_avg_heartrate(df):
     if 'Value' in df.columns and 'Time' in df.columns:
         df['Datetime'] = pd.to_datetime(df['Time'])
@@ -166,7 +163,7 @@ def build_flexible_dataframe(files):
         if col not in base_df.columns:
             base_df[col] = np.nan
 
-    # ---- Make features numeric and NaN-free (this was causing SVM/KNN/LogReg errors) ----
+    # Make features numeric and NaN-free (this was causing SVM/KNN/LogReg errors)
     num_cols = [c for c in required_features if c in base_df.columns]
     base_df[num_cols] = base_df[num_cols].apply(pd.to_numeric, errors="coerce")
     base_df[num_cols] = base_df[num_cols].replace([np.inf, -np.inf], np.nan)
@@ -178,9 +175,8 @@ def build_flexible_dataframe(files):
     cols_out = actual_features + (['ActivityDate'] if 'ActivityDate' in base_df.columns else [])
     return base_df[cols_out], actual_features
 
-# -----------------------------
 # Model loaders (cached)
-# -----------------------------
+
 @st.cache_resource(show_spinner=False)
 @st.cache_resource(show_spinner=False)
 def load_model(path: str):
@@ -219,10 +215,9 @@ def load_dl_model(path: str):
     except Exception as e:
         return f"ERROR: {e}"
 
-# -----------------------------
 # UI: Two sections (tabs)
-# -----------------------------
-ml_tab, dl_tab = st.tabs(["🧠 Machine Learning (choose one)", "🧪 Deep Learning (TensorFlow)"])
+
+ml_tab, dl_tab = st.tabs([" Machine Learning (choose one)", " Deep Learning (TensorFlow)"])
 
 with ml_tab:
     st.subheader("Select an ML model")
@@ -234,19 +229,18 @@ with ml_tab:
         "Logistic Regression": "logistic_model.pkl",
     }
     ml_choice = st.selectbox("Model", list(model_map.keys()))
-    run_ml = st.button("🔢 Predict with ML", type="primary")
+    run_ml = st.button(" Predict with ML", type="primary")
 
 with dl_tab:
     st.subheader("TensorFlow (DL)")
     dl_path = st.text_input("DL model path", "F:/Dessertation/dataset/tensorflow_sedentary_model.keras"
 )
     dl_threshold = st.slider("Sedentary threshold (DL)", 0.10, 0.90, 0.50, 0.01)
-    run_dl = st.button("🔢 Predict with DL", type="primary")
+    run_dl = st.button(" Predict with DL", type="primary")
 
-# -----------------------------
 # Prediction handlers
-# -----------------------------
-def render_summary_chart(verdict_series, title="📊 Summary Chart"):
+
+def render_summary_chart(verdict_series, title=" Summary Chart"):
     st.subheader(title)
     chart_data = verdict_series.value_counts()
     fig, ax = plt.subplots()
@@ -254,7 +248,7 @@ def render_summary_chart(verdict_series, title="📊 Summary Chart"):
     st.pyplot(fig)
 
 def render_single_day_block(df, engine_label, extra_cols=None):
-    st.subheader(f"📆 Prediction for Single Day ({engine_label})")
+    st.subheader(f" Prediction for Single Day ({engine_label})")
     if 'ActivityDate' in df.columns:
         st.markdown(f"**Date:** `{df['ActivityDate'].iloc[0]}`")
     st.markdown(f"**Status:** {df['Verdict'].iloc[0]}")
@@ -264,10 +258,10 @@ def render_single_day_block(df, engine_label, extra_cols=None):
         for label, value_fmt in extra_cols:
             st.markdown(f"**{label}:** `{value_fmt}`")
 
-    st.subheader("📊 Feature Values")
+    st.subheader("Feature Values")
     st.dataframe(df[required_features].T.rename(columns={df.index[0]: "Value"}))
 
-# ---- Matplotlib style helpers for smaller SHAP plots ----
+# Matplotlib style helpers for smaller SHAP plots
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
@@ -287,26 +281,26 @@ class small_fonts:
     def __exit__(self, exc_type, exc, tb):
         mpl.rcParams.update(self._old)
 
-# ---- ML run ----
+# ML run
 if run_ml:
     if not uploaded_files:
-        st.error("👇 Upload one or more Fitbit CSV files to begin.")
+        st.error(" Upload one or more Fitbit CSV files to begin.")
     else:
         df, actual_features = build_flexible_dataframe(uploaded_files)
         if df.empty:
-            st.error("❌ Could not process uploaded files. Please ensure correct format.")
+            st.error(" Could not process uploaded files. Please ensure correct format.")
         else:
             model_path = model_map[ml_choice]
             ml_model = load_model(model_path)
             if isinstance(ml_model, str) and ml_model.startswith("ERROR"):
-                st.error(f"❌ Failed to load '{model_path}': {ml_model}")
+                st.error(f" Failed to load '{model_path}': {ml_model}")
             else:
                 try:
                     X = (
                             df[required_features]
-                            .apply(pd.to_numeric, errors="coerce")        # coerce bad strings to NaN
-                            .replace([np.inf, -np.inf], np.nan)           # guard against infs
-                            .fillna(0.0)                                   # or .fillna(df.median()) if you prefer
+                            .apply(pd.to_numeric, errors="coerce")       
+                            .replace([np.inf, -np.inf], np.nan)         
+                            .fillna(0.0)                                  
                             .astype(float)
                         )
 
@@ -322,30 +316,30 @@ if run_ml:
                 out = df.copy()
                 out['Prediction'] = preds
                 out['Confidence'] = conf
-                out['Verdict'] = out['Prediction'].apply(lambda x: '✅ Active' if x == 0 else '❌ Sedentary')
+                out['Verdict'] = out['Prediction'].apply(lambda x: '✅ Active' if x == 0 else ' Sedentary')
 
                 if len(out) == 1:
                     render_single_day_block(out.iloc[[0]], f"ML - {ml_choice}")
-                    st.subheader("🧠 Why This Prediction? (ML)")
+                    st.subheader(" Why This Prediction? (ML)")
                     try:
                         X_train_like = X
                         X_one = X.iloc[[0]]  # keep 2D
                         sv = shap_explain_ml(ml_model, X_train_like, X_one)
 
                         with small_fonts():
-                            fig = plt.figure(figsize=(6, 3.8))             # smaller canvas
-                            shap.plots.waterfall(sv[0], show=False)        # draw on current fig
+                            fig = plt.figure(figsize=(6, 3.8))             
+                            shap.plots.waterfall(sv[0], show=False)        
                             st.pyplot(fig, clear_figure=True)
                             plt.close(fig)
                     except Exception as e:
                         st.info(f"SHAP explanation unavailable: {e}")
 
                 else:
-                    st.subheader("📅 Daily Predictions (ML)")
+                    st.subheader(" Daily Predictions (ML)")
                     st.dataframe(out[['ActivityDate', 'Verdict', 'Confidence']])
                     render_summary_chart(out['Verdict'])
 
-                    st.subheader("🧠 Why This Prediction? (ML)")
+                    st.subheader(" Why This Prediction? (ML)")
                     try:
                         batch = X.iloc[:min(50, len(X))].copy()
                         sv = shap_explain_ml(ml_model, X, batch)
@@ -365,25 +359,23 @@ if run_ml:
                     except Exception as e:
                         st.info(f"SHAP explanation unavailable: {e}")
 
-
-# ---- DL run ----
-# ---- DL run ----
+# DL run
 if run_dl:
-    # 1) make sure the path exists before loading
+    #  make sure the path exists before loading
     if not os.path.exists(dl_path):
         st.error(f"File not found: {dl_path}")
         st.stop()
 
     if not uploaded_files:
-        st.error("👇 Upload one or more Fitbit CSV files to begin.")
+        st.error("Upload one or more Fitbit CSV files to begin.")
     else:
         df, actual_features = build_flexible_dataframe(uploaded_files)
         if df.empty:
-            st.error("❌ Could not process uploaded files. Please ensure correct format.")
+            st.error(" Could not process uploaded files. Please ensure correct format.")
         else:
-            dl_model = load_dl_model(dl_path)   # safe to call now
+            dl_model = load_dl_model(dl_path)  
             if isinstance(dl_model, str) and dl_model.startswith("ERROR"):
-                st.error(f"❌ Failed to load DL model '{dl_path}': {dl_model}")
+                st.error(f" Failed to load DL model '{dl_path}': {dl_model}")
                 st.stop()
             else:
                 try:
@@ -393,10 +385,10 @@ if run_dl:
                         .apply(pd.to_numeric, errors="coerce")
                         .replace([np.inf, -np.inf], np.nan)
                     )
-                    # simple impute (or keep your median logic if you prefer)
+                    
                     X_df = X_df.fillna(0.0)
 
-                    # If you saved a StandardScaler, apply it (recommended)
+                 
                     scaler_path = "results/scaler.joblib"
                     if os.path.exists(scaler_path):
                         scaler = joblib.load(scaler_path)
@@ -418,7 +410,7 @@ if run_dl:
                 if preds.ndim == 2 and preds.shape[1] == 1:
                     prob_sed = preds[:, 0]
                 elif preds.ndim == 2 and preds.shape[1] == 2:
-                    # assume column 1 = sedentary (change if your label order differs)
+                    # assume column 1 = sedentary
                     prob_sed = preds[:, 1]
                 else:
                     st.error(f"Unexpected DL output shape: {preds.shape}. Expect (B,1) or (B,2).")
@@ -428,7 +420,7 @@ if run_dl:
                 out['Prob_Sedentary'] = prob_sed
                 out['Prediction'] = (out['Prob_Sedentary'] >= dl_threshold).astype(int)  # 1=sedentary
                 out['Confidence'] = (np.maximum(out['Prob_Sedentary'], 1 - out['Prob_Sedentary']) * 100).round(2)
-                out['Verdict'] = out['Prediction'].apply(lambda x: '✅ Active' if x == 0 else '❌ Sedentary')
+                out['Verdict'] = out['Prediction'].apply(lambda x: ' Active' if x == 0 else 'Sedentary')
 
                 if len(out) == 1:
                     # Single-day DL block with extras
@@ -436,7 +428,7 @@ if run_dl:
                         ("P(Sedentary)", f"{out['Prob_Sedentary'].iloc[0]:.3f}")
                     ]
                     render_single_day_block(out.iloc[[0]], "DL - TensorFlow", extra_cols=extra)
-                    st.subheader("🧠 Why This Prediction? (DL)")
+                    st.subheader(" Why This Prediction? (DL)")
                     try:
                         X_one = X_scaled.iloc[[0]]             # keep 2D
                         sv = shap_explain_dl(dl_model, X_scaled, X_one)
@@ -449,11 +441,11 @@ if run_dl:
                         st.info(f"DL SHAP unavailable: {e}")
 
                 else:
-                    st.subheader("📅 Daily Predictions (DL)")
+                    st.subheader("Daily Predictions (DL)")
                     st.dataframe(out[['ActivityDate', 'Verdict', 'Prob_Sedentary', 'Confidence']])
                     render_summary_chart(out['Verdict'])
 
-                    st.subheader("🧠 Why This Prediction? (DL)")
+                    st.subheader(" Why This Prediction? (DL)")
                     try:
                         batch = X_scaled.iloc[:min(50, len(X_scaled))].copy()
                         sv = shap_explain_dl(dl_model, X_scaled, batch)
@@ -463,7 +455,6 @@ if run_dl:
                             st.pyplot(fig, clear_figure=True)
                             plt.close(fig)
 
-                            # optional beeswarm
                             fig = plt.figure(figsize=(6, 4.2))
                             shap.plots.beeswarm(sv, max_display=15, show=False)
                             st.pyplot(fig, clear_figure=True)
@@ -471,9 +462,7 @@ if run_dl:
                     except Exception as e:
                         st.info(f"DL SHAP unavailable: {e}")
 
-
-# -----------------------------
 # Empty states
-# -----------------------------
+
 if not uploaded_files and not (('run_ml' in locals() and run_ml) or ('run_dl' in locals() and run_dl)):
-    st.info("👇 Upload one or more Fitbit CSV files to begin.")
+    st.info(" Upload one or more Fitbit CSV files to begin.")

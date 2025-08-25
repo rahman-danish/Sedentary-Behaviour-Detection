@@ -13,7 +13,7 @@ from sklearn.metrics import accuracy_score, classification_report, roc_auc_score
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-# 📌 Setup results and logs folder
+# Setup results and logs folder
 import os, datetime
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Where this script is
@@ -25,22 +25,22 @@ os.makedirs(LOGS_DIR, exist_ok=True)
 
 from loader import load_data
 
-# ✅ Load data
+# Load data
 X, y = load_data()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# ✅ Standardize features
+# Standardize features
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 joblib.dump(scaler, "scaler.joblib")
 
-# ✅ TensorBoard + EarlyStopping
+# TensorBoard + EarlyStopping
 log_dir = os.path.join(LOGS_DIR, datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=1)
 early_stop = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
 
-# ✅ Build model
+# Build model
 model = models.Sequential([
     layers.Dense(64, activation='relu', input_shape=(X_train.shape[1],)),
     layers.Dense(32, activation='relu'),
@@ -50,7 +50,7 @@ model = models.Sequential([
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 model.summary()
 
-# ✅ Train model and store history
+# Train model and store history
 history = model.fit(
     X_train, y_train,
     epochs=20,
@@ -59,22 +59,22 @@ history = model.fit(
     callbacks=[tensorboard_callback, early_stop]
 )
 
-# ✅ Predict and evaluate
+# Predict and evaluate
 y_pred = (model.predict(X_test) > 0.5).astype(int)
 accuracy_val = accuracy_score(y_test, y_pred)
 roc_auc_val = roc_auc_score(y_test, y_pred)
 report = classification_report(y_test, y_pred)
 
-print("✅ TensorFlow Accuracy:", accuracy_val)
-print("✅ ROC-AUC Score:", roc_auc_val)
+print("TensorFlow Accuracy:", accuracy_val)
+print("ROC-AUC Score:", roc_auc_val)
 print(report)
 
-# ✅ Confusion matrix
+# Confusion matrix
 cm = confusion_matrix(y_test, y_pred)
 
-# ===== 📌 SAVE RESULTS =====
+# SAVE RESULTS
 
-# 📌 1. Save Accuracy & Loss plots
+# Save Accuracy & Loss plots
 plt.figure(figsize=(8,6))
 plt.plot(history.history['accuracy'], label='Train Accuracy')
 plt.plot(history.history['val_accuracy'], label='Val Accuracy')
@@ -95,13 +95,13 @@ plt.title('Model Loss per Epoch')
 plt.savefig(os.path.join(RESULTS_DIR,"loss_plot.png"))
 plt.close()
 
-# 📌 2. Save Confusion Matrix as PNG
+# Save Confusion Matrix as PNG
 ConfusionMatrixDisplay(cm).plot()
 plt.title("Confusion Matrix")
 plt.savefig(os.path.join(RESULTS_DIR,"confusion_matrix.png"))
 plt.close()
 
-# 📌 3. Save metrics to a text file (UTF-8 to avoid encoding errors)
+# Save metrics to a text file (UTF-8 to avoid encoding errors)
 with open("model_metrics.txt", "w", encoding="utf-8") as f:
     f.write("✅ TensorFlow Model Evaluation\n")
     f.write(f"Accuracy: {accuracy_val:.4f}\n")
@@ -109,11 +109,11 @@ with open("model_metrics.txt", "w", encoding="utf-8") as f:
     f.write("Classification Report:\n")
     f.write(report)
 
-# 📌 4. Combine plots & metrics in a PDF
-# make sure RESULTS_DIR exists
+# Combine plots & metrics in a PDF
+
     os.makedirs(RESULTS_DIR, exist_ok=True)
 
-    # --- Accuracy per Epoch (PNG + optional PDF) ---
+    # Accuracy per Epoch (PNG + optional PDF)
     fig, ax = plt.subplots()
     ax.plot(history.history["accuracy"], label="Train Accuracy")
     ax.plot(history.history["val_accuracy"], label="Val Accuracy")
@@ -123,14 +123,14 @@ with open("model_metrics.txt", "w", encoding="utf-8") as f:
     ax.legend()
     fig.tight_layout()
 
-    # Save to PNG with the exact name you want
+    # Save to PNG
     png_path = os.path.join(RESULTS_DIR, "Accuracy_per_Epoch.png")
     fig.savefig(png_path, dpi=300, bbox_inches="tight")
 
-    # If you also want it in a PDF report:
+    # PDF report:
     pdf_path = os.path.join(RESULTS_DIR, "training_report.pdf")
     with PdfPages(pdf_path) as pdf:
-        pdf.savefig(fig)   # note: no filename here
+        pdf.savefig(fig)
 
     plt.close(fig)
 
@@ -170,8 +170,8 @@ model.save(os.path.join(RESULTS_DIR, "tensorflow_sedentary_model.keras"))
 # save as .h5 backup (modern Keras format)
 model.save(os.path.join(RESULTS_DIR, "tensorflow_sedentary_model.h5"))
 
-print("✅ Model, plots, metrics, and reports saved successfully.")
+print("Model, plots, metrics, and reports saved successfully.")
 
-print("\n📊 To view TensorBoard logs, run this command in your terminal:")
+print("\n To view TensorBoard logs, run this command in your terminal:")
 print(f"tensorboard --logdir {LOGS_DIR}")
 print("Then open the shown URL in your browser.")

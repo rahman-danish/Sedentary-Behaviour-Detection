@@ -15,10 +15,10 @@ def load_data(file_path="final_processed_fitbit.csv", target_column="is_sedentar
     try:
         df = pd.read_csv(file_path)
     except FileNotFoundError:
-        raise FileNotFoundError(f"❌ File '{file_path}' not found. Check the path.")
+        raise FileNotFoundError(f"File '{file_path}' not found. Check the path.")
 
     if target_column not in df.columns:
-        raise ValueError(f"❌ Target column '{target_column}' not found in the dataset.")
+        raise ValueError(f"Target column '{target_column}' not found in the dataset.")
 
     # Drop label, ID/date, and any leakage features
     leakage_features = ['SedentaryMinutes']  # direct leakage
