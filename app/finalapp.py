@@ -243,7 +243,7 @@ with dl_tab:
 def render_summary_chart(verdict_series, title=" Summary Chart"):
     st.subheader(title)
     chart_data = verdict_series.value_counts()
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(2.5, 2.5), dpi=130)
     ax.pie(chart_data, labels=chart_data.index, autopct='%1.1f%%', startangle=90)
     st.pyplot(fig)
 
@@ -327,7 +327,7 @@ if run_ml:
                         sv = shap_explain_ml(ml_model, X_train_like, X_one)
 
                         with small_fonts():
-                            fig = plt.figure(figsize=(6, 3.8))             
+                            fig = plt.figure(figsize=(3.5, 2), dpi=130)             
                             shap.plots.waterfall(sv[0], show=False)        
                             st.pyplot(fig, clear_figure=True)
                             plt.close(fig)
@@ -346,13 +346,13 @@ if run_ml:
 
                         with small_fonts():
                             # Global importance bar
-                            fig = plt.figure(figsize=(6, 3.8))
+                            fig = plt.figure(figsize=(3.5, 2), dpi=130)
                             shap.plots.bar(sv, max_display=10, show=False)
                             st.pyplot(fig, clear_figure=True)
                             plt.close(fig)
 
                             # Optional: beeswarm (also smaller)
-                            fig = plt.figure(figsize=(6, 4.2))
+                            fig = plt.figure(figsize=(3.5, 2), dpi=130)
                             shap.plots.beeswarm(sv, max_display=15, show=False)
                             st.pyplot(fig, clear_figure=True)
                             plt.close(fig)
@@ -433,7 +433,7 @@ if run_dl:
                         X_one = X_scaled.iloc[[0]]             # keep 2D
                         sv = shap_explain_dl(dl_model, X_scaled, X_one)
                         with small_fonts():
-                            fig = plt.figure(figsize=(6, 3.8))
+                            fig = plt.figure(figsize=(3.5, 2), dpi=130)
                             shap.plots.waterfall(sv[0], show=False)
                             st.pyplot(fig, clear_figure=True)
                             plt.close(fig)
@@ -450,12 +450,12 @@ if run_dl:
                         batch = X_scaled.iloc[:min(50, len(X_scaled))].copy()
                         sv = shap_explain_dl(dl_model, X_scaled, batch)
                         with small_fonts():
-                            fig = plt.figure(figsize=(6, 3.8))
+                            fig = plt.figure(figsize=(3.5, 2), dpi=130)
                             shap.plots.bar(sv, max_display=10, show=False)
                             st.pyplot(fig, clear_figure=True)
                             plt.close(fig)
 
-                            fig = plt.figure(figsize=(6, 4.2))
+                            fig = plt.figure(figsize=(3.5, 2), dpi=130)
                             shap.plots.beeswarm(sv, max_display=15, show=False)
                             st.pyplot(fig, clear_figure=True)
                             plt.close(fig)
